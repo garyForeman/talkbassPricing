@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """
 Author: Gary Foreman\n
-Last Modified: July 30, 2014\n
+Last Modified: July 31, 2014\n
 Searches, collects, and plots price data for used basses in the talkbass
 classifieds html pages.
 """
@@ -14,8 +14,6 @@ import time
 
 
 NUM_PAGES = 20
-NUM_BINS = 60
-MAX_PRICE = 12000
 FLOAT_REGEX = r'\d+,?\d*\.?\d*\s?[kK]?'
 
 if __name__ == "__main__":
@@ -34,6 +32,9 @@ if __name__ == "__main__":
         for price_string in price_strings:
             price_string = re.findall(FLOAT_REGEX, price_string)
             try:
+                #Will throw an index error if FLOAT_REGEX is not matched in
+                #price string. In this case, findall returns an empty list with
+                #no element at index 0.
                 price_string = price_string[0].replace(',', '')
                 if price_string[-1] == 'k' or price_string[-1] == 'K':
                     price_float = float(price_string[:-1]) * 1000.
@@ -50,8 +51,11 @@ if __name__ == "__main__":
     print np.std(PRICE_LIST)
     print np.median(PRICE_LIST)
     print np.max(PRICE_LIST)
-    plt.hist(PRICE_LIST, bins=NUM_BINS, range=(0, MAX_PRICE))
-    plt.xticks(np.arange(13)*1000, [str(x) for x in np.arange(13)*1000],
+    max_price = np.ceil(np.max(PRICE_LIST) / 1000.) * 1000.
+    num_bins = int(max_price / 200)
+    plt.hist(PRICE_LIST, bins=num_bins, range=(0, max_price))
+    plt.xticks(np.arange(int(max_price / 1000) + 1) * 1000, 
+               [str(x) for x in np.arange(int(max_price / 1000) + 1) * 1000],
                rotation=45, size="xx-large")
     plt.yticks(size="xx-large")
     plt.xlabel("Price ($)", size="xx-large")
